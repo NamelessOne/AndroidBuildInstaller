@@ -5,6 +5,7 @@ __author__ = 'NamelessOne'
 import sys
 import os
 from unipath import Path
+import shutil
 
 # noinspection PyUnresolvedReferences
 from PyQt5.QtWidgets import QWidget, QMainWindow, QTextEdit, QPushButton, QLabel, QLineEdit, QAction, QApplication, \
@@ -80,7 +81,6 @@ class Example(QWidget):
         self.setGeometry(300, 300, 500, 500)
         self.setWindowTitle('Ubiq android build setup')
         self.setWindowIcon(QIcon('web.png'))
-
         self.show()
 
     def show_file_choose_dialog(self, set_text_function):
@@ -94,31 +94,22 @@ class Example(QWidget):
             set_text_function(folder)
 
     def ok_click(self, ant_path, sdk_path, keaystore_file, template_path):
-        #self.create_build_bat_files(Path(template_path).parent)
         # TODO svn:ignore
-        self.create_files(Path(template_path).parent)
+        self.copy_files(Path(template_path).parent)
+        self.write_changes(template_path)
 
     @staticmethod
-    def create_files(path):
+    def copy_files(path):
+        for file_name in os.listdir(os.getcwd() + '\scripts\\'):
+            full_file_name = os.path.join(os.getcwd() + '\scripts\\', file_name)
+            if os.path.isfile(os.path.join(os.getcwd() + '\scripts\\', file_name)):
+                shutil.copy(full_file_name, path)
+
+    def write_changes(self, template_path):
+        # ant.propertines
+        # local.properties
+        # project.properties
         pass
-        # TODO dexed_libs!!!
-
-
-    @staticmethod
-    def create_build_bat_files(path):
-        # TODO dexed_libs!!!
-        build_file = open(path + '/build.bat', 'w+')
-        build_file.write('call rd output /s /q\n')
-        build_file.write('call python configParser.py\n')
-        build_file.write('call cd output\n')
-        build_file.write('call python googleplayversiongrabber.py\n')
-        build_file.write('call ant debug -l "log.txt"\n')
-        build_release_file = open(path + '/build_release.bat', 'w+')
-        build_release_file.write('call rd output /s /q\n')
-        build_release_file.write('call python configParser.py\n')
-        build_release_file.write('call cd output\n')
-        build_release_file.write('call python googleplayversiongrabber.py\n')
-        build_release_file.write('call ant release -l "log.txt"\n')
 
 
 if __name__ == '__main__':
