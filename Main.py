@@ -94,8 +94,15 @@ class Example(QWidget):
             set_text_function(folder)
 
     def ok_click(self, ant_path, sdk_path, keaystore_file, template_path):
-        self.create_build_bat_files(Path(template_path).parent)
+        #self.create_build_bat_files(Path(template_path).parent)
         # TODO svn:ignore
+        self.create_files(Path(template_path).parent)
+
+    @staticmethod
+    def create_files(path):
+        pass
+        # TODO dexed_libs!!!
+
 
     @staticmethod
     def create_build_bat_files(path):
