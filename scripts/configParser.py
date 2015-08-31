@@ -12,14 +12,13 @@ from tempfile import mkstemp
 from shutil import move
 from os import close, remove, rmdir
 
-
 manifestChanger = ManifestChanger()
 
 
 def process_dir(directory):
     for folder, subFolders, files in os.walk(directory):
         for file in files:
-            process_file(folder + "\\" + file)
+            process_file(folder + "/" + file)
         for subFolder in subFolders:
             process_dir(subFolder)
 
@@ -78,9 +77,9 @@ def process_need_barcode(barcode_needed):
         remove(OUTPUT_DIR + '\\libs\\zbarscanner.jar')
         remove(
             SRC_DIRECTORY + OLD_PACKAGE_DIR + '\\internal\\controller\\managers\\BarcodeCommandManager.java')
-        #Тут в ApplicationActivityViewModal удаляем ошмётки zBar
+        # Тут в ApplicationActivityViewModal удаляем ошмётки zBar
         remove_some_code(ZBAR_LIB_DIRECTIVE)
-        #Еще нужно из манифеста его снести
+        # Еще нужно из манифеста его снести
         manifestChanger.remove_activity('com.dm.zbar.android.scanner.ZBarScannerActivity')
         '''
         #Камеру удалять только если не нужно чтение баркодов И передача видео с телефона
@@ -97,8 +96,10 @@ def process_need_location(location_needed):
     if location_needed.lower() in "true":
         pass
     else:
-        remove(SRC_DIRECTORY + OLD_PACKAGE_DIR + '\\internal\\controller\\managers\\location\\LocationCommandManager.java')
-        remove(SRC_DIRECTORY + OLD_PACKAGE_DIR + '\\internal\\controller\\managers\\location\\AbstractUserLocationManager.java')
+        remove(
+            SRC_DIRECTORY + OLD_PACKAGE_DIR + '\\internal\\controller\\managers\\location\\LocationCommandManager.java')
+        remove(
+            SRC_DIRECTORY + OLD_PACKAGE_DIR + '\\internal\\controller\\managers\\location\\AbstractUserLocationManager.java')
         remove(SRC_DIRECTORY + OLD_PACKAGE_DIR + '\\internal\\controller\\managers\\location\\ILocationAware.java')
         remove(SRC_DIRECTORY + OLD_PACKAGE_DIR + '\\internal\\controller\\managers\\location\\LocationListener.java')
         remove(SRC_DIRECTORY + OLD_PACKAGE_DIR + '\\internal\\controller\\managers\\location\\UserLocationManager.java')
@@ -117,7 +118,9 @@ def process_need_gcm(gcm_needed):
         remove(SRC_DIRECTORY + OLD_PACKAGE_DIR + '\\internal\\controller\\UbiqGcmBroadcastReceiver.java')
         remove(SRC_DIRECTORY + OLD_PACKAGE_DIR + '\\internal\\controller\\UbiqGcmIntentService.java')
         remove_some_code(GCM_DIRECTIVE)
-        replace_line_in_file(OUTPUT_DIR + '\\ant_build.xml', '<path path="${sdk.dir}/extras/google/google_play_services/libproject/google-play-services_lib/libs/google-play-services.jar" />', '')
+        replace_line_in_file(OUTPUT_DIR + '\\ant_build.xml',
+                             '<path path="${sdk.dir}/extras/google/google_play_services/libproject/google-play-services_lib/libs/google-play-services.jar" />',
+                             '')
         manifestChanger.remove_receiver('.internal.controller.UbiqGcmBroadcastReceiver')
         manifestChanger.remove_uses_permission('com.google.android.c2dm.permission.RECEIVE')
         manifestChanger.remove_uses_permission('android.permission.GET_ACCOUNTS')
@@ -125,8 +128,8 @@ def process_need_gcm(gcm_needed):
         manifestChanger.remove_permission('com.ubiqmobile.client.permission.C2D_MESSAGE')
         manifestChanger.remove_uses_permission('android.permission.READ_CONTACTS')
         manifestChanger.remove_uses_permission('android.permission.VIBRATE')
-        #TODO не запускать googleplay-version-grabber
-        #TODO удалить из манифеста meta-data
+        # TODO не запускать googleplay-version-grabber
+        # TODO удалить из манифеста meta-data
 
 
 def process_locales(locales):
@@ -140,7 +143,8 @@ def process_locales(locales):
             # создаём папку
             os.mkdir(RES_DIR + '\\' + VALUES_DIR_MASK + locale)
             # и копируем туда содержимое default локали
-            shutil.copyfile(RES_DIR + '\\' + VALUES_DIR_MASK.split('-')[0] + '\\' + STRING_FILENAME, RES_DIR + '\\' + VALUES_DIR_MASK + locale + '\\' + STRING_FILENAME)
+            shutil.copyfile(RES_DIR + '\\' + VALUES_DIR_MASK.split('-')[0] + '\\' + STRING_FILENAME,
+                            RES_DIR + '\\' + VALUES_DIR_MASK + locale + '\\' + STRING_FILENAME)
             pass
     for locale in folder_locales:
         if locale not in locales:
@@ -212,6 +216,7 @@ def replace_line_in_file(file_name, source_text, replace_text):
     # and writes the whole output when done, wiping over the old contents of the file
     file.close()  # Closes the file (write session)
     # print('All went well, the modifications are done in file ' + fileName)
+
 
 # ---------------------MAIN--------------------------
 process_dir(INPUT_DIR)

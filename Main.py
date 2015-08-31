@@ -27,9 +27,9 @@ def write_properties(sdk_path, template_path, keystore_file, keystore_alias, key
     ant_prop.write('key.alias=' + keystore_alias)
     ant_prop.write('key.store.password=' + keystore_password)
     ant_prop.write('key.alias.password=' + alias_password)
-    local_prop = open(template_path + '/ant.properties', 'w+')
+    local_prop = open(template_path + '/local.properties', 'w+')
     local_prop.write('sdk.dir=' + sdk_path)
-    project_prop = open(template_path + '/ant.properties', 'w+')
+    project_prop = open(template_path + '/project.properties', 'w+')
     project_prop.write(
         'android.library.reference.1=' + sdk_path +
         '/extras/google/google_play_services/libproject/google-play-services_lib')
@@ -64,9 +64,9 @@ def change_consts_py(path, input_file):
     with cd(path):
         for line in fileinput.input("consts.py", inplace=True):
             if line.startswith('INPUT_DIR'):
-                print('INPUT_DIR = ' + Path(input_file).parent)
+                print('INPUT_DIR = \'' + Path(input_file).parent + '\'')
             elif line.startswith('CONFIG_FILE'):
-                print('CONFIG_FILE = ' + input_file)
+                print('CONFIG_FILE = \'' + input_file + '\'')
             else:
                 print(line)
         pass
@@ -170,7 +170,7 @@ class Example(QWidget):
         copy_script_files(Path(template_path).parent)
         set_svn_ignore_files(template_path)
         write_properties(sdk_path, template_path, keystore_file, alias, password, alias_password)
-        change_consts_py(Path(template_path).parent)
+        change_consts_py(Path(template_path).parent, config_file)
         first_build()
         copy_dexed_libs()
 
