@@ -23,16 +23,16 @@ ICON_FILE = 'open-file-icon.png'
 def write_properties(sdk_path, template_path, keystore_file, keystore_alias, keystore_password,
                      alias_password):
     ant_prop = open(template_path + '/ant.properties', 'w+')
-    ant_prop.write('key.store=' + keystore_file)
-    ant_prop.write('key.alias=' + keystore_alias)
-    ant_prop.write('key.store.password=' + keystore_password)
+    ant_prop.write('key.store=' + keystore_file + '\n')
+    ant_prop.write('key.alias=' + keystore_alias + '\n')
+    ant_prop.write('key.store.password=' + keystore_password + '\n')
     ant_prop.write('key.alias.password=' + alias_password)
     local_prop = open(template_path + '/local.properties', 'w+')
     local_prop.write('sdk.dir=' + sdk_path)
     project_prop = open(template_path + '/project.properties', 'w+')
     project_prop.write(
         'android.library.reference.1=' + sdk_path +
-        '/extras/google/google_play_services/libproject/google-play-services_lib')
+        '/extras/google/google_play_services/libproject/google-play-services_lib' + '\n')
     project_prop.write('target=android-21')
 
 
