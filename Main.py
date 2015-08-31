@@ -6,6 +6,7 @@ import sys
 import os
 from unipath import Path
 import shutil
+import fileinput
 
 # noinspection PyUnresolvedReferences
 from PyQt5.QtWidgets import QWidget, QMainWindow, QTextEdit, QPushButton, QLabel, QLineEdit, QAction, QApplication, \
@@ -13,8 +14,63 @@ from PyQt5.QtWidgets import QWidget, QMainWindow, QTextEdit, QPushButton, QLabel
 # noinspection PyUnresolvedReferences
 from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5 import QtCore
+from subprocess import check_call
+from cd import cd
 
 ICON_FILE = 'open-file-icon.png'
+
+
+def write_properties(sdk_path, template_path, keystore_file, keystore_alias, keystore_password,
+                     alias_password):
+    ant_prop = open(template_path + '/ant.properties', 'w+')
+    ant_prop.write('key.store=' + keystore_file)
+    ant_prop.write('key.alias=' + keystore_alias)
+    ant_prop.write('key.store.password=' + keystore_password)
+    ant_prop.write('key.alias.password=' + alias_password)
+    local_prop = open(template_path + '/ant.properties', 'w+')
+    local_prop.write('sdk.dir=' + sdk_path)
+    project_prop = open(template_path + '/ant.properties', 'w+')
+    project_prop.write(
+        'android.library.reference.1=' + sdk_path +
+        '/extras/google/google_play_services/libproject/google-play-services_lib')
+    project_prop.write('target=android-21')
+
+
+def set_svn_ignore_files(template_path):
+    # TODO ????????? ??????
+    with cd(template_path):
+        check_call("svn update --set-depth exclude local.properties")
+        check_call("svn update --set-depth exclude ant.properties")
+        check_call("svn update --set-depth exclude project.properties")
+
+
+def copy_script_files(path):
+    for file_name in os.listdir(os.getcwd() + '\scripts\\'):
+        full_file_name = os.path.join(os.getcwd() + '\scripts\\', file_name)
+        if os.path.isfile(os.path.join(os.getcwd() + '\scripts\\', file_name)):
+            shutil.copy(full_file_name, path)
+
+
+def first_build():
+    check_call("build")
+
+
+def copy_dexed_libs():
+    # TODO
+    pass
+
+
+def change_consts_py(path, input_file):
+    with cd(path):
+        for line in fileinput.input("consts.py", inplace=True):
+            if line.startswith('INPUT_DIR'):
+                print('INPUT_DIR = ' + Path(input_file).parent)
+            elif line.startswith('CONFIG_FILE'):
+                print('CONFIG_FILE = ' + input_file)
+            else:
+                print(line)
+        pass
+    pass
 
 
 class Example(QWidget):
@@ -24,18 +80,16 @@ class Example(QWidget):
         self.initUI()
 
     def initUI(self):
-        label_ant = QLabel('Ant path', self)
-        label_ant.move(20, 20)
-        text_edit_ant = QLineEdit(self)
-        text_edit_ant.move(20, 40)
-        text_edit_ant.resize(420, 20)
-        if os.environ.get('ANT_HOME'):
-            text_edit_ant.setText(os.environ['ANT_HOME'])
-        button_ant = QPushButton(self)
-        button_ant.setIcon(QIcon(ICON_FILE))
-        button_ant.move(450, 40)
-        button_ant.resize(20, 20)
-        button_ant.clicked.connect(lambda x: self.show_folder_choose_dialog(text_edit_ant.setText))
+        label_config = QLabel('Build config file', self)
+        label_config.move(20, 20)
+        text_edit_config = QLineEdit(self)
+        text_edit_config.move(20, 40)
+        text_edit_config.resize(420, 20)
+        button_config = QPushButton(self)
+        button_config.setIcon(QIcon(ICON_FILE))
+        button_config.move(450, 40)
+        button_config.resize(20, 20)
+        button_config.clicked.connect(lambda x: self.show_file_choose_dialog(text_edit_config.setText))
 
         label_sdk = QLabel('SDK path', self)
         label_sdk.move(20, 70)
@@ -50,7 +104,7 @@ class Example(QWidget):
         button_sdk.resize(20, 20)
         button_sdk.clicked.connect(lambda x: self.show_folder_choose_dialog(text_edit_sdk.setText))
 
-        label_keystore = QLabel('Keystore file path', self)
+        label_keystore = QLabel('Keystore file', self)
         label_keystore.move(20, 120)
         text_edit_keystore = QLineEdit(self)
         text_edit_keystore.move(20, 140)
@@ -61,21 +115,40 @@ class Example(QWidget):
         button_keystore.resize(20, 20)
         button_keystore.clicked.connect(lambda x: self.show_file_choose_dialog(text_edit_keystore.setText))
 
+        label_alias = QLabel('Keystore alias', self)
+        label_alias.move(20, 170)
+        text_edit_alias = QLineEdit(self)
+        text_edit_alias.move(20, 190)
+        text_edit_alias.resize(420, 20)
+
+        label_password = QLabel('Keystore password', self)
+        label_password.move(20, 220)
+        text_edit_password = QLineEdit(self)
+        text_edit_password.move(20, 240)
+        text_edit_password.resize(420, 20)
+
+        label_alias_password = QLabel('Keystore alias password', self)
+        label_alias_password.move(20, 270)
+        text_edit_alias_password = QLineEdit(self)
+        text_edit_alias_password.move(20, 290)
+        text_edit_alias_password.resize(420, 20)
+
         label_template = QLabel('Template android project path', self)
-        label_template.move(20, 170)
+        label_template.move(20, 320)
         text_edit_template = QLineEdit(self)
-        text_edit_template.move(20, 190)
+        text_edit_template.move(20, 340)
         text_edit_template.resize(420, 20)
         button_template = QPushButton(self)
         button_template.setIcon(QIcon(ICON_FILE))
-        button_template.move(450, 190)
+        button_template.move(450, 340)
         button_template.resize(20, 20)
         button_template.clicked.connect(lambda x: self.show_folder_choose_dialog(text_edit_template.setText))
 
         ok_button = QPushButton('OK', self)
         ok_button.move(400, 450)
         ok_button.clicked.connect(
-            lambda x: self.ok_click(text_edit_ant.text(), text_edit_sdk.text(), text_edit_keystore.text(),
+            lambda x: self.ok_click(text_edit_config.text(), text_edit_sdk.text(), text_edit_keystore.text(),
+                                    text_edit_alias.text(), text_edit_password.text(), text_edit_alias_password.text(),
                                     text_edit_template.text()))
 
         self.setGeometry(300, 300, 500, 500)
@@ -93,23 +166,13 @@ class Example(QWidget):
         if folder:
             set_text_function(folder)
 
-    def ok_click(self, ant_path, sdk_path, keaystore_file, template_path):
-        # TODO svn:ignore
-        self.copy_files(Path(template_path).parent)
-        self.write_changes(template_path)
-
-    @staticmethod
-    def copy_files(path):
-        for file_name in os.listdir(os.getcwd() + '\scripts\\'):
-            full_file_name = os.path.join(os.getcwd() + '\scripts\\', file_name)
-            if os.path.isfile(os.path.join(os.getcwd() + '\scripts\\', file_name)):
-                shutil.copy(full_file_name, path)
-
-    def write_changes(self, template_path):
-        # ant.propertines
-        # local.properties
-        # project.properties
-        pass
+    def ok_click(self, config_file, sdk_path, keystore_file, alias, password, alias_password, template_path):
+        copy_script_files(Path(template_path).parent)
+        set_svn_ignore_files(template_path)
+        write_properties(sdk_path, template_path, keystore_file, alias, password, alias_password)
+        change_consts_py(Path(template_path).parent)
+        first_build()
+        copy_dexed_libs()
 
 
 if __name__ == '__main__':
