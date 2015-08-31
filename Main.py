@@ -73,6 +73,11 @@ def change_consts_py(path, input_file):
     pass
 
 
+def copy_google_play_services():
+    # TODO
+    pass
+
+
 class Example(QWidget):
     def __init__(self):
         super().__init__()
@@ -171,6 +176,7 @@ class Example(QWidget):
         set_svn_ignore_files(template_path)
         write_properties(sdk_path, template_path, keystore_file, alias, password, alias_password)
         change_consts_py(Path(template_path).parent, config_file)
+        copy_google_play_services()
         first_build()
         copy_dexed_libs()
 
